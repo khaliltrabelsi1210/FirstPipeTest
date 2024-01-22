@@ -9,7 +9,8 @@ public class Employee {
         // Constructeur par défaut
     }
 
-    public Employee(String name, String email) {
+    public Employee(String name, String email) throws AttributeValidationException {
+
         this.name = name;
         this.email = email;
     }

@@ -15,6 +15,10 @@ import static org.junit.jupiter.api.Assertions.*;
 public class EmployeeCRUDIntegrationTest {
     private Connection connection;
     private EmployeeDAO employeeDAO;
+   public Service service = new Service();
+
+    public EmployeeCRUDIntegrationTest() throws SQLException {
+    }
 
 
     @BeforeEach
@@ -41,19 +45,20 @@ public class EmployeeCRUDIntegrationTest {
     }
 
     @Test
-    public void testCRUDOperations() {
+    public void testCRUDOperations() throws AttributeValidationException {
         // Créer un employé
         Employee employee = new Employee("John KDoe", "john@example.com");
         employeeDAO.createEmployee(employee);
 
         // Lire l'employé créé
 
-        List<Employee> mimi = employeeDAO.getAllEmployees();
-        Employee retrievedEmployee = mimi.get(mimi.size()-1);
+        List<Employee> list = employeeDAO.getAllEmployees();
+        Employee retrievedEmployee = list.get(list.size()-1);
         System.out.println(employee);
         System.out.println(retrievedEmployee);
 
         assertNotNull(retrievedEmployee);
+
         assertEquals(employee.getName(), retrievedEmployee.getName());
         assertEquals(employee.getEmail(), retrievedEmployee.getEmail());
 
@@ -73,5 +78,75 @@ public class EmployeeCRUDIntegrationTest {
 
         // Vérifier que l'employé a été supprimé
         assertNull(employeeDAO.getEmployeeById(updatedEmployee.getId()));
+    }
+    @Test
+    public void testCreateEmployee() {
+Employee employee=new Employee();
+try{
+    employee=service.create(null,null);
+    List<Employee> employees = employeeDAO.getAllEmployees();
+    Employee retrievedEmployee = employees.get(employees.size() - 1);
+    assertNotNull(retrievedEmployee);
+    assertEquals(employee.getName(), retrievedEmployee.getName());
+    assertEquals(employee.getEmail(), retrievedEmployee.getEmail());}
+catch (AttributeValidationException e)
+{
+    System.out.println(e.getMessage());
+}
+    }
+    @Test
+    public void testCreateEmployeeWithNullValues() {
+        try {
+            service.create(null, null);
+            fail("Une exception AttributeValidationException aurait dû être déclenchée avec des valeurs nulles.");
+        } catch (AttributeValidationException e) {
+         assertEquals("Name ne peut pas être null.", e.getMessage());        }
+    }
+    @Test
+    public void testCreateEmployeeWithValidData() {
+        Employee employee = new Employee("John Doe", "john@example.com");
+
+            Employee createdEmployee = service.create("John Doe", "john@example.com");
+            assertNotNull(createdEmployee);
+            List<Employee> employees = employeeDAO.getAllEmployees();
+            Employee retrievedEmployee = employees.get(employees.size() - 1);
+            assertNotNull(retrievedEmployee);
+            assertEquals(employee.getName(), retrievedEmployee.getName());
+            assertEquals(employee.getEmail(), retrievedEmployee.getEmail());
+
+    }
+
+    @Test
+    public void testUpdateEmployee()  {
+
+        List<Employee> list = employeeDAO.getAllEmployees();
+        AttributeValidationException.validateNotNull(list,"la liste des employees");
+        Employee retrievedEmployee = list.get(list.size()-1);
+        //testNom
+        retrievedEmployee.setName("Khalil Smith");
+        AttributeValidationException.validateNotNull(retrievedEmployee.getName(), "name");
+        //TestEmail
+        retrievedEmployee.setEmail("ok@example.com");
+        AttributeValidationException.validateNotNull(retrievedEmployee.getEmail(), "email");
+
+        employeeDAO.updateEmployee(retrievedEmployee);
+
+        // Vérifier la mise à jour de l'employé
+        Employee updatedEmployee = employeeDAO.getEmployeeById(retrievedEmployee.getId());
+        assertNotNull(updatedEmployee);
+        assertEquals(retrievedEmployee.getName(), updatedEmployee.getName());
+        assertEquals(retrievedEmployee.getEmail(), updatedEmployee.getEmail());
+    }
+
+    @Test
+    public void testDeleteEmployee() throws AttributeValidationException {
+        List<Employee> list = employeeDAO.getAllEmployees();
+        AttributeValidationException.validateNotNull(list,"la liste des employees");
+
+        Employee retrievedEmployee = list.get(list.size()-1);
+        employeeDAO.deleteEmployee(retrievedEmployee.getId());
+
+        // Vérifier que l'employé a été supprimé
+        assertNull(employeeDAO.getEmployeeById(retrievedEmployee.getId()));
     }
 }

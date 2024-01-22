@@ -1,14 +1,13 @@
 package org.example;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class EmployeeDAO {
-    private Connection connection;
+
+    Connection connection;
+
 
     public EmployeeDAO(Connection connection) {
         this.connection = connection;
@@ -17,6 +16,8 @@ public class EmployeeDAO {
     public void createEmployee(Employee employee) {
         String sql = "INSERT INTO employees (name, email) VALUES (?, ?)";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+
             preparedStatement.setString(1, employee.getName());
             preparedStatement.setString(2, employee.getEmail());
             preparedStatement.executeUpdate();
